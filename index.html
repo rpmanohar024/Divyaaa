@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Happiest Birthday Divyaaa ✨</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --royal-bg: #070714; --gold: #d4af37; --lavender: #e6e6fa; --purple: #4b0082; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--royal-bg); color: white; overflow: hidden; height: 100vh; width: 100vw; font-family: 'Segoe UI', sans-serif; }
+        
+        canvas { position: fixed; top: 0; left: 0; z-index: 5; pointer-events: none; }
+
+        #musicBtn {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; padding: 12px 25px; border: 2px solid var(--gold);
+            background: var(--purple); color: var(--gold);
+            font-family: 'Cinzel'; font-weight: bold; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 15px var(--gold);
+        }
+        .hidden { display: none !important; }
+
+        .main-wrapper {
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100vh; width: 100%; text-align: center;
+        }
+
+        /* --- COUNTDOWN STYLES --- */
+        #countdownPhase { display: flex; flex-direction: column; align-items: center; }
+        .timer-box { font-family: 'Cinzel'; font-size: 3rem; color: var(--gold); display: flex; gap: 15px; margin: 20px 0; }
+        .time-unit { display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; min-width: 80px; border: 1px solid var(--gold); }
+        .time-unit label { font-size: 0.7rem; color: var(--lavender); letter-spacing: 1px; }
+        .wait-msg { font-family: 'Dancing Script'; font-size: 2.5rem; color: var(--lavender); margin-bottom: 10px; }
+
+        .enter-btn {
+            margin-top: 25px; padding: 15px 35px;
+            background: var(--purple); border: 2px solid var(--gold);
+            color: var(--gold); font-family: 'Cinzel'; font-weight: bold;
+            border-radius: 50px; cursor: pointer; animation: pulse 2s infinite;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        /* --- MAGIC STAR & CANDLE --- */
+        .pulsing-star { font-size: 80px; color: var(--gold); cursor: pointer; animation: pulse 1.5s infinite; filter: drop-shadow(0 0 20px var(--gold));}
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .candle-container { display: none; flex-direction: column; align-items: center; opacity: 0; transition: opacity 1s; cursor: pointer; }
+        .flame { width: 22px; height: 50px; background: linear-gradient(to bottom, #fff, #f9e29c, #ff8c00); border-radius: 50% 50% 20% 20%; box-shadow: 0 0 45px var(--gold); animation: flicker 0.1s infinite alternate; }
+        .wick { width: 4px; height: 15px; background: #111; margin: 0 auto; }
+        .candle-body { width: 55px; height: 150px; background: linear-gradient(135deg, #9d81ba, #4b0082); border-radius: 8px; box-shadow: inset -10px 0 15px rgba(0,0,0,0.4); }
+        @keyframes flicker { 0% { transform: skewX(-2deg) scale(1); } 100% { transform: skewX(2deg) scale(1.05); } }
+
+        /* --- GALLERY --- */
+        .gallery-container { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
+        .photo-wrap { max-width: 85%; max-height: 65vh; border: 4px solid var(--gold); border-radius: 15px; padding: 10px; background: rgba(255,255,255,0.1); opacity: 0; transition: opacity 1s ease, transform 1s ease; transform: scale(0.8); }
+        .photo-wrap img { max-width: 100%; max-height: 60vh; border-radius: 10px; display: block; margin: 0 auto; }
+        .t-active { opacity: 1 !important; transform: scale(1) !important; }
+        .photo-message { font-family: 'Dancing Script'; font-size: 2.2rem; margin-top: 25px; color: var(--lavender); padding: 0 20px; }
+
+        .final-screen { display: none; padding: 20px; animation: fadeIn 2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .replay-btn { margin-top: 40px; padding: 12px 30px; background: transparent; border: 2px solid var(--gold); color: var(--gold); font-family: 'Cinzel'; border-radius: 50px; cursor: pointer; transition: 0.3s; }
+        .replay-btn:hover { background: var(--gold); color: var(--purple); }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<audio id="bgMusic" preload="auto" loop><source src="music.mp3.mp3" type="audio/mpeg"></audio>
+
+<button id="musicBtn" onclick="activateMusic()">ENABLE SOUND 🎵</button>
+
+<div class="main-wrapper">
+    <div id="countdownPhase">
+        <h2 class="wait-msg">The wait is over, Divya... 💜</h2>
+        <div class="timer-box">
+            <div class="time-unit"><span>00</span><label>Days</label></div>
+            <div class="time-unit"><span>00</span><label>Hrs</label></div>
+            <div class="time-unit"><span>00</span><label>Mins</label></div>
+            <div class="time-unit"><span>00</span><label>Secs</label></div>
+        </div>
+        <button class="enter-btn" onclick="goToStarPhase()">ENTER YOUR MAGIC WORLD ✨</button>
+    </div>
+
+    <div id="starPhase" style="display:none;" onclick="startSequence()">
+        <div class="pulsing-star">✦</div>
+        <p style="color:var(--gold); margin-top:20px; font-family:'Cinzel'; letter-spacing: 3px;">TOUCH TO START MAGIC</p>
+    </div>
+
+    <div id="candlePhase" class="candle-container" onclick="extinguishCandle()">
+        <div class="flame" id="flame"></div>
+        <div class="wick" id="wick"></div>
+        <div class="candle-body"></div>
+        <h1 style="margin-top: 20px;">Make a wish & blow Divya... 🌬️</h1>
+    </div>
+
+    <div id="galleryPhase" class="gallery-container">
+        <div class="photo-wrap" id="frame"><img id="photo" src=""></div>
+        <div id="msg" class="photo-message"></div>
+    </div>
+
+    <div id="finalPhase" class="final-screen">
+        <h1 style="color:var(--gold); font-family:'Cinzel'; font-size: 2.5rem;">Happy Birthday Divya! ❤️</h1>
+        <p style="font-family:'Dancing Script'; font-size: 1.8rem; margin-top: 15px;">You are my most precious gift of this year.</p>
+        <p style="font-family:'Cinzel'; font-size: 1rem; margin-top: 20px; color: var(--gold);">– Manohar</p>
+        <button class="replay-btn" onclick="restartExperience()">✨ Replay Memories ✨</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const music = document.getElementById('bgMusic');
+    const btn = document.getElementById('musicBtn');
+    
+    let smokeParticles = [], hearts = [], idx = 1, isExtinguished = false;
+    const totalPhotos = 30; 
+
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Smoke {
+        constructor(x, y) {
+            this.x = x; this.y = y;
+            this.vx = (Math.random() - 0.5) * 1.5;
+            this.vy = -1.5 - Math.random() * 2.5;
+            this.radius = 6; this.alpha = 0.8;
+        }
+        update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.008; this.radius += 0.4; }
+        draw() { ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = "#e0e0e0"; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+    }
+
+    class Heart {
+        constructor() { this.reset(); this.y = Math.random() * canvas.height; }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = canvas.height + 30;
+            this.size = Math.random() * 12 + 10;
+            this.speed = Math.random() * 0.4 + 0.2; // SLOW
+            this.opacity = Math.random() * 0.4 + 0.2;
+            this.swing = Math.random() * 1.2;
+        }
+        update() { this.y -= this.speed; this.x += Math.sin(this.y / 60) * this.swing; if (this.y < -30) this.reset(); }
+        draw() { ctx.save(); ctx.globalAlpha = this.opacity; ctx.fillStyle = "#E6E6FA"; ctx.font = `${this.size}px serif`; ctx.fillText("💜", this.x, this.y); ctx.restore(); }
+    }
+
+    for(let i=0; i<25; i++) hearts.push(new Heart());
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hearts.forEach(h => { h.update(); h.draw(); });
+        smokeParticles.forEach((s, i) => { if (s.alpha > 0) { s.update(); s.draw(); } else smokeParticles.splice(i, 1); });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    function activateMusic() { music.play().then(() => { music.pause(); btn.classList.add('hidden'); }).catch(() => {}); }
+
+    function goToStarPhase() {
+        document.getElementById('countdownPhase').style.display = 'none';
+        document.getElementById('starPhase').style.display = 'block';
+    }
+
+    async function startSequence() {
+        music.play().catch(() => {});
+        btn.classList.add('hidden');
+        document.getElementById('starPhase').style.display = 'none';
+        const cp = document.getElementById('candlePhase');
+        cp.style.display = 'flex';
+        setTimeout(() => cp.style.opacity = '1', 100);
+        // Mic logic (Simplified)
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const audioCtx = new AudioContext();
+            const analyser = audioCtx.createAnalyser();
+            audioCtx.createMediaStreamSource(stream).connect(analyser);
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            const check = () => {
+                if (isExtinguished) return;
+                analyser.getByteFrequencyData(dataArray);
+                if (dataArray.reduce((a,b)=>a+b)/dataArray.length > 40) extinguishCandle();
+                requestAnimationFrame(check);
+            };
+            check();
+        } catch (e) {}
+    }
+
+    function extinguishCandle() {
+        if (isExtinguished) return; 
+        isExtinguished = true;
+        document.getElementById('flame').style.opacity = "0";
+        const wickPos = document.getElementById('wick').getBoundingClientRect();
+        for(let i=0; i<45; i++) setTimeout(() => smokeParticles.push(new Smoke(wickPos.left + 2, wickPos.top)), i * 35);
+        setTimeout(() => {
+            document.getElementById('candlePhase').style.display = 'none';
+            document.getElementById('galleryPhase').style.display = 'flex';
+            startGallery();
+        }, 2500);
+    }
+
+    const messages = [
+        "My favorite person 😌", "Wishing you a day as radiant as your name, Divya ✨", "May this year be the one where you finally stand under the Northern Lights in Norway ❤️", "Cheers to another year of being an incredible person 🌸", "Forever grateful 🤍",
+        "To the girl who keeps this family together with her quiet strength and loud laughter 👑", "I’m so grateful to have someone like you in my life 🏠", "Here’s to a lifetime of laughter and beautiful memories 🎁", "Keep shining, keep growing, and keep being your awesome self 🌙", "May this year bring you closer to all the dreams you’ve been chasing ☀️",
+        "To a year filled with mountain air and salty hair 🏔️", "Here’s to trading the city lights for the Aurora Borealis ☕", "To trekking through the Alps and relaxing on the sands of Bali 💭", "I hope every single one of your wishes comes true ♾️", "Stay wonderful, stay kind, and stay exactly who you are 🕊️",
+        "May this new chapter be your most successful one yet 🎶", "Sending you vibes of adventure, exploration, and total freedom 🥂", "Sparkling brighter than stars ⭐", "You define elegance 💃", "I hope your next trip is the one you’ve been dreaming of your whole life 📖",
+        "To another year of laughter 😂", "Your ability to support everyone around you is your true superpower 🌏", "Your heart is big enough to carry everyone’s burdens and still find room to smile 📸", "Sending you a massive hug and a year’s worth of good vibes 😍", "Sweetest soul I know 🍬",
+        "My lucky charm 🍀", "Watching you master the charts with such patience is truly inspiring 💎", "Grace personified 🐚", "To the girl who stays disciplined when the world gets greedy 💖", "I am so excited to stand by your side and watch you build your empire from scratch 💪"
+    ];
+
+    function startGallery() {
+        if(idx > totalPhotos) { 
+            document.getElementById('galleryPhase').style.display = 'none';
+            document.getElementById('finalPhase').style.display = 'block';
+            return;
+        }
+        const img = document.getElementById('photo');
+        const frame = document.getElementById('frame');
+        const msgDiv = document.getElementById('msg');
+        img.src = `photos/img${idx}.jpg`;
+        img.onload = () => {
+            frame.classList.add('t-active');
+            msgDiv.innerText = messages[(idx - 1) % messages.length];
+            setTimeout(() => {
+                frame.classList.remove('t-active');
+                setTimeout(() => { idx++; startGallery(); }, 1000);
+            }, 5000);
+        };
+        img.onerror = () => { idx++; startGallery(); };
+    }
+
+    function restartExperience() {
+        idx = 1; isExtinguished = false; smokeParticles = [];
+        document.getElementById('finalPhase').style.display = 'none';
+        document.getElementById('starPhase').style.display = 'block';
+        document.getElementById('flame').style.opacity = "1";
+    }
+</script>
+</body>
+</html>
